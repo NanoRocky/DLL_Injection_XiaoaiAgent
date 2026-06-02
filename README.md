@@ -1,3 +1,5 @@
+# WARNING: 100% VIBE CODING FOR ENTIRE REPO
+
 # DLL Injector —— 小爱同学 & 小米AI创作 注入器
 
 一个轻量级的 Windows DLL 注入工具，用于将 `msimg32.dll` 注入到 **PC 版小爱同学** 和 **小米AI创作 PC 版** 进程中。采用经典的 `CreateProcess` + `CreateRemoteThread` + `LoadLibrary` 注入技术实现。
