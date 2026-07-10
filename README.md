@@ -1,14 +1,14 @@
 # WARNING: 100% VIBE CODING FOR ENTIRE REPO
 
-# DLL Injector —— 小爱同学 & 小米AI创作 注入器
+# DLL Injector —— 小爱同学、小米AI创作 & 小米电脑管家注入器
 
-一个轻量级的 Windows DLL 注入工具，用于将 `msimg32.dll` 注入到 **PC 版小爱同学** 和 **小米AI创作 PC 版** 进程中。采用经典的 `CreateProcess` + `CreateRemoteThread` + `LoadLibrary` 注入技术实现。
+一个轻量级的 Windows DLL 注入工具，用于将 `msimg32.dll` 注入到 **PC 版小爱同学**、**小米AI创作 PC 版** 和 **小米电脑管家** 进程中。采用经典的 `CreateProcess` + `CreateRemoteThread` + `LoadLibrary` 注入技术实现。
 
 > 本项目仅供学习和研究参考，请勿用于非法用途。
 
 ## 功能特点
 
-- **双注入器合一** — 同时支持小爱同学和小米AI创作两个目标程序
+- **三目标支持** — 分别为小爱同学、小米AI创作和小米电脑管家生成独立注入器
 - **注册表路径自动发现** — 从 Windows 注册表 (`App Paths`) 自动定位目标程序安装位置
 - **极简代码** — 核心注入逻辑全部封装在单个头文件中，易于理解和修改
 - **静态链接** — 生成的独立可执行文件无运行时依赖
@@ -32,14 +32,17 @@
 .
 ├── src/
 │   ├── XiaoaiAgentInjector.cpp      # 小爱同学注入器入口
-│   └── XiaomiAICreatorInjector.cpp  # 小米AI创作注入器入口
+│   ├── XiaomiAICreatorInjector.cpp  # 小米AI创作注入器入口
+│   └── XiaomiPcManagerInjector.cpp  # 小米电脑管家注入器入口
 ├── include/
 │   └── InjectorCore.h               # 核心注入逻辑（头文件）
 ├── resources/
-│   ├── XiaoaiAgent.ico              # 小爱同学注入器图标
+│   ├── XiaoaiAgent.ico              # 小爱同学主程序图标
 │   ├── XiaoaiAgent.rc               # 小爱同学资源脚本（含版本信息）
-│   ├── XiaomiAICreator.ico          # 小米AI创作注入器图标
-│   └── XiaomiAICreator.rc           # 小米AI创作资源脚本（含版本信息）
+│   ├── XiaomiAICreatorClient.ico    # 小米AI创作主程序图标
+│   ├── XiaomiAICreatorClient.rc     # 小米AI创作资源脚本（含版本信息）
+│   ├── XiaomiPcManager.ico          # 小米电脑管家主程序图标
+│   └── XiaomiPcManager.rc           # 小米电脑管家资源脚本（含版本信息）
 ├── build.ps1                        # PowerShell 编译脚本
 ├── LICENSE                          # MIT 许可证
 └── README.md                        # 说明文档
@@ -61,9 +64,10 @@
 .\build.ps1
 ```
 
-编译完成后会生成两个可执行文件：
+编译完成后会生成三个可执行文件：
 - `XiaoaiAgentInjector.exe` — 小爱同学注入器
 - `XiaomiAICreatorInjector.exe` — 小米AI创作注入器
+- `XiaomiPcManagerInjector.exe` — 小米电脑管家注入器
 
 ### 编译选项说明
 
@@ -83,5 +87,3 @@
 ## 许可证
 
 本项目基于 MIT 许可证发布。详见 [LICENSE](LICENSE) 文件。
-
-

@@ -4,8 +4,8 @@
 IDI_ICON1 ICON "XiaoaiAgent.ico"
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION     3,0,3,263
-PRODUCTVERSION  3,0,3,263
+FILEVERSION     3,0,4,289
+PRODUCTVERSION  3,0,4,289
 FILEFLAGSMASK   0x3fL
 FILEFLAGS       0x0L
 FILEOS          0x40004L
@@ -19,11 +19,11 @@ BEGIN
             VALUE "CompanyName",      "RavenYin\0"
             VALUE "ProductName",      "XiaoaiAgent Injector\0"
             VALUE "FileDescription",  "DLL Injector for XiaoaiAgent\0"
-            VALUE "FileVersion",      "3.0.3.263\0"
+            VALUE "FileVersion",      "3.0.4.289\0"
             VALUE "InternalName",     "XiaoaiAgentInjector\0"
             VALUE "LegalCopyright",   "Copyright (C) 2026 RavenYin. Licensed under MIT.\0"
             VALUE "OriginalFilename", "XiaoaiAgentInjector.exe\0"
-            VALUE "ProductVersion",   "3.0.3.263\0"
+            VALUE "ProductVersion",   "3.0.4.289\0"
         END
     END
     BLOCK "VarFileInfo"
