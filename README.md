@@ -15,14 +15,57 @@
 - **嵌入元数据** — 通过 Windows 资源文件嵌入版本信息与自定义图标
 - **无需管理员权限** — 用户权限即可运行（适用于当前用户安装的程序）
 
-## 工作原理
+## 两种注入模式
 
-1. 注入器从注册表 `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\<程序名>.exe` 读取目标程序安装路径
+注入器现在是**多模式**的，同一个 EXE 支持以下几种用法：
+
+### 模式一：直接启动（经典 Launcher，向后兼容）
+
+双击运行、或无参数运行，行为与旧版一致：
+
+1. 从注册表 `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\<程序名>.exe` 读取安装路径
 2. 以**挂起状态** (`CREATE_SUSPENDED`) 启动目标进程
-3. 通过 `VirtualAllocEx` 在目标进程中分配内存
-4. 将 `msimg32.dll` 的完整路径写入该内存
-5. 创建远程线程，以 DLL 路径为参数调用 `LoadLibraryA`，强制目标进程加载 DLL
-6. 等待 3 秒后恢复目标进程主线程执行
+3. `VirtualAllocEx` → `WriteProcessMemory` 写入 DLL 路径
+4. `CreateRemoteThread` 调用 `LoadLibraryW` 加载 DLL
+5. 恢复目标主线程执行
+
+**局限**：只覆盖“由注入器亲自启动”的这一次。如果目标程序由开始菜单、桌面快捷方式、更新器或程序自身重新拉起，就会绕开注入。
+
+### 模式二：IFEO 全局注入（推荐）
+
+利用 Windows 的 **Image File Execution Options (IFEO) Debugger** 机制，把注入器登记为目标 EXE 的“调试器”。此后**无论谁、以何种方式启动目标程序**，Windows 都会先启动注入器：
+
+1. 注入器以 `DEBUG_ONLY_THIS_PROCESS | CREATE_SUSPENDED` 创建真正的目标进程（`DEBUG` 标志**绕过 IFEO 重定向**避免无限递归，`CREATE_SUSPENDED` 保证在目标解析动态依赖前抢先注入；二者均**无需管理员权限**即可启动目标）
+2. 干净地脱离调试关系后，用经典远程线程方式注入 `msimg32.dll`
+3. 恢复目标主线程，进程照常自由运行
+
+**批量覆盖整个安装目录**：`--install` 会从 `App Paths` 读取安装目录，**递归枚举其下所有 `.exe`**，为每一个用 IFEO 的 `UseFilter` + `FilterFullPath` 机制登记**精确完整路径**的规则。这样：
+
+- 覆盖目标程序自我重启、更新器、启动器桩等**任意 EXE 启动路径**；
+- 用完整路径精确匹配，**不会误伤系统里其它同名 EXE**（如 `update.exe`）；
+- 安装时把已登记路径记录到 `HKLM\SOFTWARE\XiaomiInjector\<主程序名>`，`--uninstall` 据此**精确回滚全部规则**。
+
+> **注意（重要）**：如果目标是 Electron/Chromium 套壳，目录里的 GPU/渲染器/工具子进程一旦被 IFEO 接管，可能因丢失父进程的句柄继承/沙箱令牌而**崩溃或导致整个程序打不开**。若安装后程序异常，先 `--uninstall` 一键还原，再按需缩小注入范围。
+
+命令：
+
+```powershell
+# 安装全局注入（会弹出 UAC 请求管理员权限，写入 HKLM IFEO）
+.\XiaoaiAgentInjector.exe --install
+
+# 查看当前状态（是否已安装、Debugger 指向、DLL 是否就位）
+.\XiaoaiAgentInjector.exe --status
+
+# 卸载全局注入
+.\XiaoaiAgentInjector.exe --uninstall
+```
+
+**内建保护措施**：
+- 注入失败也**一定会让目标程序照常启动**，绝不会把你锁在程序外
+- 递归护栏：万一 `DEBUG` 绕过在某些系统上失效，会弹窗中止而非产生进程风暴
+- 位数校验：64 位注入器不会向 32 位目标注入（会跳过注入、仅启动程序）
+
+> **注意**：IFEO 按 EXE **文件名**匹配，不区分目录；安装/卸载需要管理员权限；安全软件会重点监控 IFEO Debugger。请仅在授权的兼容/测试场景使用。目标若为 32 位进程，需要用 32 位工具链另行编译注入器。
 
 `msimg32.dll` 必须放置在注入器可执行文件的**同级目录**下。本仓库不包含该 DLL 文件。
 
